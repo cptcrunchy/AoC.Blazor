@@ -1,7 +1,43 @@
 ﻿@page "/day-1"
 
+
 <h3>DayOne</h3>
+<p>@Count.ToString()</p>
 
 @code {
+
+	private Puzzle Puzzle { get; set; } = new();
+	private int Count { get; set; }
+	protected override void OnAfterRender(bool firstRender)
+	{
+
+		if (firstRender)
+		{
+			Puzzle = Utilities.GetPuzzleInput("Day1");
+
+			var depths = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(d => Int32.Parse(d)).ToList();
+			Count = GetDepthIncreases(depths);
+
+			StateHasChanged();
+		}
+
+	}
+
+	private int GetDepthIncreases(List<int> depths)
+	{
+		var increaseCount = 0;
+		for (var i = 0; i < depths.Count; i++)
+		{
+			var depth = depths[i];
+			if (i != 0)
+			{
+				var prev = depths[i - 1];
+				if (depth > prev) increaseCount++;
+			}
+		}
+
+		return increaseCount;
+	}
+
 
 }
