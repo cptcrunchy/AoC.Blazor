@@ -5,9 +5,9 @@
 		<MudDivider Class="my-2" />
 		<MudNavLink Href="/" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
 		<MudNavGroup Title="Days" Icon="@Icons.Filled.CalendarViewDay" Expanded="true">
-			@foreach(var day in Days)
+			@foreach(int day in Days)
 			{
-				<MudNavLink Href="@($"{day}")">Day 1</MudNavLink>
+				<MudNavLink Href="@($"day-{day}")">Day @day</MudNavLink>
 			}
 		</MudNavGroup>
 		<MudNavLink Href="/file-uploader" Icon="@Icons.Filled.Receipt">Uploader</MudNavLink>
@@ -17,7 +17,7 @@
 
 @code {
 
-	List<string> Days { get; set; } = new();
+	List<int> Days { get; set; } = new();
 
 	protected override void OnInitialized()
 	{
@@ -25,8 +25,9 @@
 		{
 			if (Utilities.CheckDayPageExists(day))
 			{
-				Days.Add($"day-{day}");
+				Days.Add(day);
 			}
 		}
+		StateHasChanged();
 	}
 }
