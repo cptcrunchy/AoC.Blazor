@@ -2,12 +2,13 @@
 
 
 <h3>DayOne</h3>
-<p>@Count.ToString()</p>
-
+<p>@Count</p>
+<p>@SlidingCount</p>
 @code {
 
 	private Puzzle Puzzle { get; set; } = new();
 	private int Count { get; set; }
+	private int SlidingCount { get; set; }
 	protected override void OnAfterRender(bool firstRender)
 	{
 
@@ -17,6 +18,7 @@
 
 			var depths = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(d => Int32.Parse(d)).ToList();
 			Count = GetDepthIncreases(depths);
+			SlidingCount = GetSlidingWindowIncreases(depths);
 
 			StateHasChanged();
 		}
@@ -39,5 +41,20 @@
 		return increaseCount;
 	}
 
+	private int GetSlidingWindowIncreases(List<int> depths)
+	{
+		var increaseCount = 0;
+		for(var i = 0; i < depths.Count; i++)
+		{
+			var setA = depths.Skip(i).Take(3).ToArray();
+			var setB = depths.Skip(i + 1).Take(3).ToArray();
+			if(setA.Length == 3 && setB.Length == 3)
+			{
+				if (setB.Sum() > setA.Sum()) increaseCount++;
+			}
+
+		}
+		return increaseCount;
+	}
 
 }
