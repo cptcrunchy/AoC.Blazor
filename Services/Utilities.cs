@@ -20,10 +20,10 @@ namespace AoC.Blazor.Services
 		public static Puzzle GetPuzzleInput(string puzzleName)
 		{
 			var puzzleDirectory = $"{Directory.GetCurrentDirectory()}\\Data\\";
-			if (!CheckPuzzleExists(puzzleName)) return new Puzzle();
-			var puzzleJson = File.ReadAllText($"{puzzleDirectory}{puzzleName}.json");
-			var puzzle = JsonSerializer.Deserialize<Puzzle>(puzzleJson);
-			return puzzle ?? new Puzzle();
+				var puzzleJson = File.ReadAllText($"{puzzleDirectory}{puzzleName}.json");
+				var puzzle = JsonSerializer.Deserialize<Puzzle>(puzzleJson);
+				return puzzle ?? new Puzzle();
+			
 		}
 
 		public static bool CheckPuzzleExists(string puzzleName)
