@@ -19,6 +19,8 @@ namespace AoC.Blazor.Models
 		}
 		public string Name { get; set; }
 		public int Day { get; set; }
+		public string SolutionA { get; set; }
+		public string SolutionB { get; set; }
 
 		public string Input { get; set; }
 
