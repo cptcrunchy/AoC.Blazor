@@ -22,7 +22,7 @@ namespace AoC.Blazor.Services
 		public static async Task UpdatePuzzleFile(Puzzle puzzle)
 		{
 			var puzzleDirectory = $"{Directory.GetCurrentDirectory()}\\Data\\";
-			var puzzleJson = await File.ReadAllTextAsync($"{puzzleDirectory}{puzzle.Name}.json");
+			var puzzleJson = await File.ReadAllTextAsync($"{puzzleDirectory}Day{puzzle.Day}.json");
 			var previousPuzzle = JsonSerializer.Deserialize<Puzzle>(puzzleJson);
 			if (previousPuzzle is not null)
 			{
