@@ -1,5 +1,42 @@
 ﻿@page "/"
 
-<h1>Hello, cptCrunch!</h1>
 
-Welcome to your 2021 Advent of Code tracker.
+<MudSimpleTable Dense="true" Hover="true" Bordered="true" Striped="true" Style="overflow-x: auto;">
+	<thead>
+		<tr>
+			@foreach (var h in headings)
+			{
+				<th>@h</th>
+			}
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var puzzle in Puzzles)
+		{
+			<tr>
+				<td>@puzzle.Day</td>
+				<td>@puzzle.Name</td>
+				<td>@foreach(var star in GetSolutionCount(puzzle)){
+					<MudIcon Icon="@Icons.Filled.Star" />
+				}
+				</td>
+			</tr>
+		}
+	</tbody>
+</MudSimpleTable>
+
+
+@code {
+	string[] headings = { "Day", "Name", "Stars" };
+
+	List<Puzzle> Puzzles = Utilities.GetPuzzles();
+
+	private List<int> GetSolutionCount(Puzzle puzzle)
+	{
+		var solutionCount = new List<int>();
+		if (!string.IsNullOrEmpty(puzzle.SolutionA)) solutionCount.Add(1);
+		if (!string.IsNullOrEmpty(puzzle.SolutionB)) solutionCount.Add(2);
+		return solutionCount;
+	}
+
+}
