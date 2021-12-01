@@ -1,0 +1,59 @@
+﻿@page "/file-uploader"
+
+@using System.Text.Json
+@using System.Text.Json.Serialization 
+@using System.IO
+
+<MudCard Outlined="true">
+	<MudCardHeader>
+		<MudText Typo="Typo.body1">Puzzle Input Uploader</MudText>
+	</MudCardHeader>
+	<MudCardContent>
+		<MudGrid Justify="Justify.FlexStart" Spacing="3">
+			<MudItem xs="12" sm="6" md="6" >
+				<MudTextField Label="Puzzle Name" Variant="Variant.Text" @bind-Value="@puzzleName" />
+			</MudItem>
+			<MudItem xs="12" sm="6" md="6">
+				<MudTextField T="string" Label="Puzzle Input" Variant="Variant.Text" @bind-Text="@puzzleInput" Lines="5" />
+			</MudItem>
+		</MudGrid>		
+	</MudCardContent>
+	<MudCardActions>
+		<MudGrid>
+			<MudItem xs="12" sm="3" md="3">
+				<MudSelect T="int" Strict="true" Label="Day" AnchorOrigin="Origin.BottomCenter" @bind-SelectedValues="@puzzleDay" Margin="Margin.Dense" Dense="true">
+					@foreach (var day in Enumerable.Range(1, 25))
+					{
+						<MudSelectItem Value="@day" />
+					}
+				</MudSelect>
+			</MudItem>
+			<MudItem xs="12" sm="3" md="3">
+				<MudSwitch @bind-Checked="@isPractice" Color="Color.Primary" Label="Practice" />
+			</MudItem>
+			<MudItem xs="12" sm="6" md="6">
+				<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@SavePuzzleInput">Save</MudButton>
+			</MudItem>
+
+		</MudGrid>
+	</MudCardActions>
+</MudCard>
+
+@code {
+	string puzzleInput { get; set; }
+	string puzzleName { get; set; }
+	bool isPractice { get; set; }
+	IEnumerable<int> puzzleDay { get; set; }
+
+	async Task SavePuzzleInput()
+	{
+
+		var puzzleName = isPractice ? $"Day{puzzleDay.FirstOrDefault().ToString()}-practice" : $"Day{puzzleDay.FirstOrDefault().ToString()}";
+
+		var newPuzzle = new Puzzle(puzzleName, puzzleDay.FirstOrDefault(), puzzleInput);
+
+		if (!Utilities.CheckPuzzleExists(puzzleName)) await Utilities.CreatePuzzleFile(newPuzzle);
+
+	}
+
+}
