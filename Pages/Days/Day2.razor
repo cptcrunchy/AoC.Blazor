@@ -56,23 +56,15 @@
 		foreach (var direction in directions)
 		{
 			var unit = int.Parse(direction[1]);
-			if (direction[0] == "up")
-			{
-				aim -= unit;
-			}
-			if (direction[0] == "down")
-			{
-				aim += unit;
-			}
+			if (direction[0] == "up") aim -= unit;
+			if (direction[0] == "down") aim += unit;
 			if (direction[0] == "forward")
 			{
 				horizontalPos += unit;
 				depth += (aim * unit);
 			}
 		}
-
 		var total = depth * horizontalPos;
-
 		return total.ToString();
 	}
 
