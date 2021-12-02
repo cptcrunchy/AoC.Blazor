@@ -1,9 +1,10 @@
 ﻿@page "/day-2"
 
+@inject ISnackbar SnackBar
 
 <MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
 
-	<MudText Typo="Typo.h4" GutterBottom="true">Day 2: </MudText>
+	<MudText Typo="Typo.h4" GutterBottom="true">Day 2: Dive!</MudText>
 	
 	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
 	
@@ -37,9 +38,10 @@
 		var horizontalPos = 0;
 		foreach(var direction in directions)
 		{
-			if (direction[0] == "forward") horizontalPos += int.Parse(direction[1]);
-			if (direction[0] == "up") depth -= int.Parse(direction[1]);
-			if (direction[0] == "down") depth += int.Parse(direction[1]);
+			var unit = int.Parse(direction[1]);
+			if (direction[0] == "forward") horizontalPos += unit;
+			if (direction[0] == "up") depth -= unit;
+			if (direction[0] == "down") depth += unit;
 		}
 
 		var total = depth * horizontalPos;
@@ -71,6 +73,7 @@
 	private async Task UpdatePuzzle()
 	{
 		await Utilities.UpdatePuzzleFile(Puzzle);
+		SnackBar.Add("Puzzle JSON updated!", Severity.Success);
 	}
 
 }
