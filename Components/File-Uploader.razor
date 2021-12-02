@@ -1,8 +1,6 @@
 ﻿@page "/file-uploader"
 
-@using System.Text.Json
-@using System.Text.Json.Serialization 
-@using System.IO
+@inject ISnackbar SnackBar
 
 <MudCard Outlined="true">
 	<MudCardHeader>
@@ -11,17 +9,17 @@
 	<MudCardContent>
 		<MudGrid Justify="Justify.FlexStart" Spacing="3">
 			<MudItem xs="12" sm="6" md="6" >
-				<MudTextField Label="Puzzle Name" Variant="Variant.Text" @bind-Value="@puzzleName" />
+				<MudTextField Label="Puzzle Name" Variant="Variant.Text" @bind-Value="@PuzzleName" />
 			</MudItem>
 			<MudItem xs="12" sm="6" md="6">
-				<MudTextField T="string" Label="Puzzle Input" Variant="Variant.Text" @bind-Text="@puzzleInput" Lines="5" />
+				<MudTextField T="string" Label="Puzzle Input" Variant="Variant.Text" @bind-Text="@PuzzleInput" Lines="5" />
 			</MudItem>
 		</MudGrid>		
 	</MudCardContent>
 	<MudCardActions>
 		<MudGrid>
 			<MudItem xs="12" sm="3" md="3">
-				<MudSelect T="int" Strict="true" Label="Day" AnchorOrigin="Origin.BottomCenter" @bind-SelectedValues="@puzzleDay" Margin="Margin.Dense" Dense="true">
+				<MudSelect T="int" Strict="true" Label="Day" AnchorOrigin="Origin.BottomCenter" @bind-SelectedValues="@PuzzleDay" Margin="Margin.Dense" Dense="true">
 					@foreach (var day in Enumerable.Range(1, 25))
 					{
 						<MudSelectItem Value="@day" />
@@ -40,20 +38,25 @@
 </MudCard>
 
 @code {
-	string puzzleInput { get; set; }
-	string puzzleName { get; set; }
+	string PuzzleInput { get; set; }
+	string PuzzleName { get; set; }
 	bool isPractice { get; set; }
-	IEnumerable<int> puzzleDay { get; set; }
+	IEnumerable<int> PuzzleDay { get; set; }
 
 	async Task SavePuzzleInput()
 	{
 
-		var puzzleName = isPractice ? $"Day{puzzleDay.FirstOrDefault().ToString()}-practice" : $"Day{puzzleDay.FirstOrDefault().ToString()}";
+		var puzzleFileName = isPractice ? $"Day{PuzzleDay.FirstOrDefault().ToString()}-practice" : $"Day{PuzzleDay.FirstOrDefault().ToString()}";
 
-		var newPuzzle = new Puzzle(puzzleName, puzzleDay.FirstOrDefault(), puzzleInput);
+		var newPuzzle = new Puzzle(PuzzleName, PuzzleDay.FirstOrDefault(), PuzzleInput);
 
-		if (!Utilities.CheckPuzzleExists(puzzleName)) await Utilities.CreatePuzzleFile(newPuzzle);
+		if (!Utilities.CheckPuzzleExists(puzzleFileName)) await Utilities.CreatePuzzleFile(newPuzzle);
+		SnackBar.Add("File Saved Successfully!", Severity.Success);
 
+		PuzzleInput = "";
+		PuzzleName = "";
+		isPractice = false;
+		PuzzleDay = null;
 	}
 
 }
