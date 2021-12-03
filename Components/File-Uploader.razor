@@ -48,9 +48,10 @@
 
 		var puzzleFileName = isPractice ? $"Day{PuzzleDay.FirstOrDefault().ToString()}-practice" : $"Day{PuzzleDay.FirstOrDefault().ToString()}";
 
-		var newPuzzle = new Puzzle(PuzzleName, PuzzleDay.FirstOrDefault(), PuzzleInput);
+		var newPuzzle = new Puzzle(PuzzleName, PuzzleDay.FirstOrDefault(), isPractice, PuzzleInput);
 
-		if (!Utilities.CheckPuzzleExists(puzzleFileName)) await Utilities.CreatePuzzleFile(newPuzzle, puzzleFileName);
+		if (!Utilities.CheckPuzzleExists(puzzleFileName)) await Utilities.CreatePuzzleFile(newPuzzle);
+		else await Utilities.UpdatePuzzleFile(newPuzzle);
 		SnackBar.Add("File Saved Successfully!", Severity.Success);
 
 		PuzzleInput = "";
