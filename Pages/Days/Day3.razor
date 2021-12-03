@@ -6,7 +6,7 @@
 
 <MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
 
-	<MudText Typo="Typo.h4" GutterBottom="true">Day 3: </MudText>
+	<MudText Typo="Typo.h4" GutterBottom="true">Day 3: Binary Diagnostic</MudText>
 
 	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
 
@@ -34,45 +34,16 @@
 
 	}
 
-
 	private List<List<string>> GetReportData(string[] data)
 	{
 		var numbers = new List<List<string>>();
 		for (var i = 0; i < data[0].Length; i++)
 		{
 			var col = new List<string>();
-			foreach (var row in data)
-			{
-				col.Add(row[i].ToString());
-			}
+			foreach (var row in data) col.Add(row[i].ToString());
 			numbers.Add(col);
 		}
 		return numbers;
-	}
-
-	private string GetMostCommon(List<string> values)
-	{
-		return values
-		.GroupBy(i => i)
-		.OrderByDescending(g => g.Count())
-		.Select(g => g.Key)
-		.FirstOrDefault();
-	}
-
-	private char GetO2BitCriteria(List<string> values)
-	{
-		var ratings = values
-		.GroupBy(i => i)
-		.OrderBy(g => g.Count())
-		.Select(g => new { Key = g.Key, Count = g.Count() })
-		.ToList();
-
-		if (ratings.Count == 1) return char.Parse(ratings[0].Key);
-		else
-		{
-			if (ratings[0].Count == ratings[1].Count) return '1';
-			else return ratings[0].Count > ratings[1].Count ? char.Parse(ratings[0].Key) : char.Parse(ratings[1].Key);
-		}
 	}
 
 	private List<string> GetBitRating(string[] data, int position = 0)
@@ -81,38 +52,38 @@
 		for (var i = 0; i < data[0].Length; i++)
 		{
 			var col = new List<string>();
-			foreach (var row in data)
-			{
-				col.Add(row[i].ToString());
-			}
+			foreach (var row in data) col.Add(row[i].ToString());
 			numbers.Add(col);
 		}
 		return numbers[position];
 	}
 
+	private string GetMostCommon(List<string> values)
+	{
+		return values.GroupBy(i => i).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
+	}
+
 	private string GetLeastCommon(List<string> values)
 	{
-		return values
-		.GroupBy(i => i)
-		.OrderBy(g => g.Count())
-		.Select(g => g.Key)
-		.FirstOrDefault();
+		return values.GroupBy(i => i).OrderBy(g => g.Count()).Select(g => g.Key).FirstOrDefault();
+	}
+
+	private char GetO2BitCriteria(List<string> values)
+	{
+		var ratings = values.GroupBy(i => i).OrderBy(g => g.Count()).Select(g => new { Key = g.Key, Count = g.Count() }).ToList();
+		if (ratings.Count == 1) return char.Parse(ratings[0].Key);
+		if (ratings[0].Count == ratings[1].Count) return '1';
+		if (ratings[0].Count > ratings[1].Count) return char.Parse(ratings[0].Key);
+		return char.Parse(ratings[1].Key);
 	}
 
 	private char GetCO2BitCriteria(List<string> values)
 	{
-		var ratings = values
-		.GroupBy(i => i)
-		.OrderBy(g => g.Count())
-		.Select(g => new { Key = g.Key, Count = g.Count() })
-		.ToList();
-
+		var ratings = values.GroupBy(i => i).OrderBy(g => g.Count()).Select(g => new { Key = g.Key, Count = g.Count() }).ToList();
 		if (ratings.Count == 1) return char.Parse(ratings[0].Key);
-		else
-		{ 
-			if (ratings[0].Count == ratings[1].Count) return '0';
-			else return ratings[0].Count < ratings[1].Count ? char.Parse(ratings[0].Key) : char.Parse(ratings[1].Key);
-		}
+		if (ratings[0].Count == ratings[1].Count) return '0';
+		if (ratings[0].Count < ratings[1].Count) return char.Parse(ratings[0].Key);
+		return char.Parse(ratings[1].Key);
 	}
 
 	private string GetPowerConsumption(string[] data)
@@ -143,16 +114,13 @@
 	private decimal GetO2GenRating(string[] data)
 	{
 		var reportData = data;
-		var dataLength = data[0].Length;
 		var O2rating = "";
 
-		for (var i = 0; i < dataLength; i++)
+		for (var i = 0; i < data[0].Length; i++)
 		{
 			var o2BitRatings = GetBitRating(reportData, i);
 			var o2BitCriteria = GetO2BitCriteria(o2BitRatings);
-			var filteredReportData = reportData.Where(bit => bit[i].Equals(o2BitCriteria)).ToArray();
-			reportData = filteredReportData;
-
+			reportData = reportData.Where(bit => bit[i].Equals(o2BitCriteria)).ToArray();
 
 			if (reportData.Length == 1)
 			{
@@ -169,15 +137,13 @@
 	private decimal GetCO2GenRating(string[] data)
 	{
 		var reportData = data;
-		var dataLength = data[0].Length;
 		var CO2rating = "";
 
-		for (var i = 0; i < dataLength; i++)
+		for (var i = 0; i < data[0].Length; i++)
 		{
 			var o2BitRatings = GetBitRating(reportData, i);
 			var o2BitCriteria = GetCO2BitCriteria(o2BitRatings);
-			var filteredReportData = reportData.Where(bit => bit[i].Equals(o2BitCriteria)).ToArray();
-			reportData = filteredReportData;
+			reportData = reportData.Where(bit => bit[i].Equals(o2BitCriteria)).ToArray();
 
 			if (reportData.Length == 1)
 			{
@@ -190,7 +156,6 @@
 
 		return Convert.ToInt32(CO2rating, 2);
 	}
-
 
 	private async Task UpdatePuzzle()
 	{
