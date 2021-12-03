@@ -1,0 +1,86 @@
+﻿@page "/day-3"
+
+@using System.Text;
+
+@inject ISnackbar SnackBar
+
+<MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
+
+	<MudText Typo="Typo.h4" GutterBottom="true">Day 3: </MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
+
+	<MudText Typo="Typo.body1" GutterBottom="true">--- Part Two ---</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionB</MudText>
+
+	<MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@UpdatePuzzle">Update Puzzle</MudButton>
+</MudPaper>
+
+@code {
+	private Puzzle Puzzle { get; set; } = new();
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			Puzzle = Utilities.GetPuzzleInput("Day3");
+			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+			Puzzle.SolutionA = GetPowerConsumption(data);
+
+			StateHasChanged();
+		}
+
+	}
+
+
+	private List<List<string>> GetReportData(string[] data)
+	{
+		var numbers = new List<List<string>>();
+		for (var i = 0; i < data[0].Length; i++)
+		{
+			var col = new List<string>();
+			foreach (var row in data)
+			{
+				col.Add(row[i].ToString());
+			}
+			numbers.Add(col);
+		}
+		return numbers;
+	}
+
+	private string GetPowerConsumption(string[] data)
+	{
+		var reportBits = GetReportData(data);
+
+		var gammaBuilder = new StringBuilder();
+		var epsilonBuilder = new StringBuilder();
+
+		foreach(var reportBit in reportBits)
+		{
+			var gcd = reportBit
+				.GroupBy(i => i)
+				.OrderByDescending(g => g.Count())
+				.Select(g => g.Key).FirstOrDefault();
+			gammaBuilder.Append(gcd);
+			var lcd = reportBit
+				.GroupBy(i => i)
+				.OrderBy(g => g.Count())
+				.Select(g => g.Key).FirstOrDefault();
+			epsilonBuilder.Append(lcd);
+		}
+		var gammaRate = Convert.ToInt32(gammaBuilder.ToString(), 2);
+		var epsilonRate = Convert.ToInt32(epsilonBuilder.ToString(), 2);
+		var powerConsumption = gammaRate * epsilonRate;
+		return powerConsumption.ToString();
+	}
+
+
+	private async Task UpdatePuzzle()
+	{
+		await Utilities.UpdatePuzzleFile(Puzzle);
+		SnackBar.Add("Puzzle JSON updated!", Severity.Success);
+	}
+
+}
