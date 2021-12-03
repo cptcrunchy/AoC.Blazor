@@ -11,10 +11,10 @@ namespace AoC.Blazor.Services
 	public class Utilities
 	{
 
-		public static async Task CreatePuzzleFile(Puzzle puzzle)
+		public static async Task CreatePuzzleFile(Puzzle puzzle, string fileName)
 		{
 			var puzzleDirectory = $"{Directory.GetCurrentDirectory()}\\Data\\";
-			await using var createPuzzleStream = File.Create($"{puzzleDirectory}{puzzle.Name}.json");
+			await using var createPuzzleStream = File.Create($"{puzzleDirectory}{fileName}.json");
 			await JsonSerializer.SerializeAsync(createPuzzleStream, puzzle);
 			await createPuzzleStream.DisposeAsync();
 		}
@@ -30,9 +30,7 @@ namespace AoC.Blazor.Services
 				previousPuzzle.SolutionB = puzzle.SolutionB;
 			}
 
-			await File.WriteAllTextAsync($"{puzzleDirectory}{puzzle.Name}.json", JsonSerializer.Serialize(previousPuzzle));
-
-
+			await File.WriteAllTextAsync($"{puzzleDirectory}Day{puzzle.Day}.json", JsonSerializer.Serialize(previousPuzzle));
 		}
 
 		public static List<Puzzle> GetPuzzles()

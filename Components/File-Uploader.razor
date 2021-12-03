@@ -50,7 +50,7 @@
 
 		var newPuzzle = new Puzzle(PuzzleName, PuzzleDay.FirstOrDefault(), PuzzleInput);
 
-		if (!Utilities.CheckPuzzleExists(puzzleFileName)) await Utilities.CreatePuzzleFile(newPuzzle);
+		if (!Utilities.CheckPuzzleExists(puzzleFileName)) await Utilities.CreatePuzzleFile(newPuzzle, puzzleFileName);
 		SnackBar.Add("File Saved Successfully!", Severity.Success);
 
 		PuzzleInput = "";
