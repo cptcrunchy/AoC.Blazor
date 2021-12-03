@@ -11,10 +11,11 @@ namespace AoC.Blazor.Services
 	public class Utilities
 	{
 
-		public static async Task CreatePuzzleFile(Puzzle puzzle, string fileName)
+		public static async Task CreatePuzzleFile(Puzzle puzzle)
 		{
 			var puzzleDirectory = $"{Directory.GetCurrentDirectory()}\\Data\\";
-			await using var createPuzzleStream = File.Create($"{puzzleDirectory}{fileName}.json");
+			var fileName = puzzle.IsPractice ? $"Day{puzzle.Day}-practice.json" : $"Day{puzzle.Day}.json";
+			await using var createPuzzleStream = File.Create($"{puzzleDirectory}{fileName}");
 			await JsonSerializer.SerializeAsync(createPuzzleStream, puzzle);
 			await createPuzzleStream.DisposeAsync();
 		}
@@ -22,15 +23,15 @@ namespace AoC.Blazor.Services
 		public static async Task UpdatePuzzleFile(Puzzle puzzle)
 		{
 			var puzzleDirectory = $"{Directory.GetCurrentDirectory()}\\Data\\";
-			var puzzleJson = await File.ReadAllTextAsync($"{puzzleDirectory}Day{puzzle.Day}.json");
+			var fileName = puzzle.IsPractice ? $"Day{puzzle.Day}-practice.json" : $"Day{puzzle.Day}.json";
+			var puzzleJson = await File.ReadAllTextAsync($"{puzzleDirectory}{fileName}");
 			var previousPuzzle = JsonSerializer.Deserialize<Puzzle>(puzzleJson);
 			if (previousPuzzle is not null)
 			{
 				previousPuzzle.SolutionA = puzzle.SolutionA;
 				previousPuzzle.SolutionB = puzzle.SolutionB;
 			}
-
-			await File.WriteAllTextAsync($"{puzzleDirectory}Day{puzzle.Day}.json", JsonSerializer.Serialize(previousPuzzle));
+			await File.WriteAllTextAsync($"{puzzleDirectory}{fileName}", JsonSerializer.Serialize(previousPuzzle));
 		}
 
 		public static List<Puzzle> GetPuzzles()
