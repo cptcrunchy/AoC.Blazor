@@ -28,7 +28,7 @@
 			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
 			Puzzle.SolutionA = GetPowerConsumption(data);
-
+			Puzzle.SolutionB = GetLifeSupportRating(data);
 			StateHasChanged();
 		}
 
@@ -50,6 +50,71 @@
 		return numbers;
 	}
 
+	private string GetMostCommon(List<string> values)
+	{
+		return values
+		.GroupBy(i => i)
+		.OrderByDescending(g => g.Count())
+		.Select(g => g.Key)
+		.FirstOrDefault();
+	}
+
+	private char GetO2BitCriteria(List<string> values)
+	{
+		var ratings = values
+		.GroupBy(i => i)
+		.OrderBy(g => g.Count())
+		.Select(g => new { Key = g.Key, Count = g.Count() })
+		.ToList();
+
+		if (ratings.Count == 1) return char.Parse(ratings[0].Key);
+		else
+		{
+			if (ratings[0].Count == ratings[1].Count) return '1';
+			else return ratings[0].Count > ratings[1].Count ? char.Parse(ratings[0].Key) : char.Parse(ratings[1].Key);
+		}
+	}
+
+	private List<string> GetBitRating(string[] data, int position = 0)
+	{
+		var numbers = new List<List<string>>();
+		for (var i = 0; i < data[0].Length; i++)
+		{
+			var col = new List<string>();
+			foreach (var row in data)
+			{
+				col.Add(row[i].ToString());
+			}
+			numbers.Add(col);
+		}
+		return numbers[position];
+	}
+
+	private string GetLeastCommon(List<string> values)
+	{
+		return values
+		.GroupBy(i => i)
+		.OrderBy(g => g.Count())
+		.Select(g => g.Key)
+		.FirstOrDefault();
+	}
+
+	private char GetCO2BitCriteria(List<string> values)
+	{
+		var ratings = values
+		.GroupBy(i => i)
+		.OrderBy(g => g.Count())
+		.Select(g => new { Key = g.Key, Count = g.Count() })
+		.ToList();
+
+		if (ratings.Count == 1) return char.Parse(ratings[0].Key);
+		else
+		{ 
+			if (ratings[0].Count == ratings[1].Count) return '0';
+			else return ratings[0].Count < ratings[1].Count ? char.Parse(ratings[0].Key) : char.Parse(ratings[1].Key);
+		}
+	}
+
 	private string GetPowerConsumption(string[] data)
 	{
 		var reportBits = GetReportData(data);
@@ -59,21 +124,71 @@
 
 		foreach(var reportBit in reportBits)
 		{
-			var gcd = reportBit
-				.GroupBy(i => i)
-				.OrderByDescending(g => g.Count())
-				.Select(g => g.Key).FirstOrDefault();
-			gammaBuilder.Append(gcd);
-			var lcd = reportBit
-				.GroupBy(i => i)
-				.OrderBy(g => g.Count())
-				.Select(g => g.Key).FirstOrDefault();
-			epsilonBuilder.Append(lcd);
+			gammaBuilder.Append(GetMostCommon(reportBit));
+			epsilonBuilder.Append(GetLeastCommon(reportBit));
 		}
 		var gammaRate = Convert.ToInt32(gammaBuilder.ToString(), 2);
 		var epsilonRate = Convert.ToInt32(epsilonBuilder.ToString(), 2);
 		var powerConsumption = gammaRate * epsilonRate;
 		return powerConsumption.ToString();
+	}
+
+	private string GetLifeSupportRating(string[] data)
+	{
+		var O2Rate = GetO2GenRating(data);
+		var CO2Rate = GetCO2GenRating(data);
+		return (O2Rate * CO2Rate).ToString();
+	}
+
+	private decimal GetO2GenRating(string[] data)
+	{
+		var reportData = data;
+		var dataLength = data[0].Length;
+		var O2rating = "";
+
+		for (var i = 0; i < dataLength; i++)
+		{
+			var o2BitRatings = GetBitRating(reportData, i);
+			var o2BitCriteria = GetO2BitCriteria(o2BitRatings);
+			var filteredReportData = reportData.Where(bit => bit[i].Equals(o2BitCriteria)).ToArray();
+			reportData = filteredReportData;
+
+
+			if (reportData.Length == 1)
+			{
+				O2rating = reportData.First();
+				break;
+			}
+			else continue;
+
+		}
+
+		return Convert.ToInt32(O2rating, 2);
+	}
+
+	private decimal GetCO2GenRating(string[] data)
+	{
+		var reportData = data;
+		var dataLength = data[0].Length;
+		var CO2rating = "";
+
+		for (var i = 0; i < dataLength; i++)
+		{
+			var o2BitRatings = GetBitRating(reportData, i);
+			var o2BitCriteria = GetCO2BitCriteria(o2BitRatings);
+			var filteredReportData = reportData.Where(bit => bit[i].Equals(o2BitCriteria)).ToArray();
+			reportData = filteredReportData;
+
+			if (reportData.Length == 1)
+			{
+				CO2rating = reportData.First();
+				break;
+			}
+			else continue;
+
+		}
+
+		return Convert.ToInt32(CO2rating, 2);
 	}
 
 
