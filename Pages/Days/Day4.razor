@@ -43,10 +43,7 @@
 		{
 			var card = cardsData
 				.Take(5)
-				.Select(row => row
-					.Split(' ')
-					.Where(n => !string.IsNullOrEmpty(n))
-					.ToArray())
+				.Select(row => row.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToArray())
 				.ToArray();
 
 			BingoCards.Add(card);
