@@ -1,0 +1,91 @@
+﻿@page "/day-4"
+@using System.Diagnostics
+
+@inject ISnackbar Snackbar
+
+<MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
+
+	<MudText Typo="Typo.h4" GutterBottom="true">Day 4: Binary Diagnostic</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
+
+	<MudText Typo="Typo.body1" GutterBottom="true">--- Part Two ---</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionB</MudText>
+
+	<MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@UpdatePuzzle">Update Puzzle</MudButton>
+</MudPaper>
+
+@code {
+	private Puzzle Puzzle { get; set; } = new();
+	private List<string[][]> BingoCards { get; set; } = new();
+	private List<string> BingoNumbers { get; set; }
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			Puzzle = Utilities.GetPuzzleInput("Day4");
+			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+			BingoNumbers = data.First().Split(",").Select(n => n).ToList();
+			BuildBingoCards(data);
+			Puzzle.SolutionA = GetSumOfWinningCard();
+			StateHasChanged();
+		}
+
+	}
+
+	private void BuildBingoCards(string[] data)
+	{
+		var cardsData = data.Skip(1).ToList();
+
+		while (cardsData.Count != 0)
+		{
+			var card = cardsData
+				.Take(5)
+				.Select(row => row
+					.Split(' ')
+					.Where(n => !string.IsNullOrEmpty(n))
+					.ToArray())
+				.ToArray();
+
+			BingoCards.Add(card);
+			cardsData = cardsData.Skip(5).ToList();
+		}
+
+	}
+	private static bool CheckForWinnerHorizontal(string[][] bingoCard) => bingoCard.Any(row => row.All(cell => cell.StartsWith("*")));
+	private static bool CheckForWinnerVertical(string[][] bingoCard) =>
+		Enumerable.Range(0, 5)
+			.Select(row => Enumerable.Range(0, 5)
+				.Select(col => bingoCard[col][row]).ToArray()).ToArray()
+			.Any(row => row.All(cell => cell.StartsWith("*")));
+
+
+	private string GetSumOfWinningCard()
+	{
+		var i = 0;
+		string[][] winningCard;
+
+		do
+		{
+			var markedBingoCards = BingoCards.Select(card => card.Select(row => row.Select(cell => cell.Equals(BingoNumbers[i]) ? $"*{cell}" : cell).ToArray()).ToArray());
+			BingoCards = markedBingoCards.ToList();
+			winningCard = BingoCards.SingleOrDefault(CheckForWinnerHorizontal) ?? BingoCards.SingleOrDefault(CheckForWinnerVertical);
+			i++;
+		} while (winningCard is null && i < BingoNumbers.Count - 1);
+
+		var sumOfUnmarked = winningCard?.SelectMany(row => row.Where(cell => !cell.StartsWith("*"))).Select(n => int.Parse(n)).Sum() ?? 0;
+
+		var winnerCardSum = sumOfUnmarked * int.Parse(BingoNumbers[i - 1]);
+		return winnerCardSum.ToString();
+
+	}
+
+
+	private async Task UpdatePuzzle()
+	{
+		await Utilities.UpdatePuzzleFile(Puzzle);
+		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
+	}
+
+}
