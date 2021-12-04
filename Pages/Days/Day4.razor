@@ -29,6 +29,7 @@
 			BingoNumbers = data.First().Split(",").Select(n => n).ToList();
 			BuildBingoCards(data);
 			Puzzle.SolutionA = GetSumOfWinningCard();
+			Puzzle.SolutionB = GetSumOfLastWinningCard();
 			StateHasChanged();
 		}
 
@@ -60,7 +61,6 @@
 				.Select(col => bingoCard[col][row]).ToArray()).ToArray()
 			.Any(row => row.All(cell => cell.StartsWith("*")));
 
-
 	private string GetSumOfWinningCard()
 	{
 		var i = 0;
@@ -79,6 +79,27 @@
 		var winnerCardSum = sumOfUnmarked * int.Parse(BingoNumbers[i - 1]);
 		return winnerCardSum.ToString();
 
+	}
+
+	private string GetSumOfLastWinningCard()
+	{
+		var i = 0;
+		string[][] winningCard;
+
+		do
+		{
+			var markedBingoCards = BingoCards.Select(card => card.Select(row => row.Select(cell => cell.Equals(BingoNumbers[i]) ? $"*{cell}" : cell).ToArray()).ToArray());
+			BingoCards = markedBingoCards.ToList();
+			winningCard = BingoCards.FirstOrDefault();
+			BingoCards.RemoveAll(CheckForWinnerHorizontal);
+			BingoCards.RemoveAll(CheckForWinnerVertical);
+			i++;
+		} while (BingoCards.Any() && i < BingoNumbers.Count - 1);
+
+		var sumOfUnmarked = winningCard?.SelectMany(row => row.Where(cell => !cell.StartsWith("*"))).Select(n => int.Parse(n)).Sum() ?? 0;
+
+		var winnerCardSum = sumOfUnmarked * int.Parse(BingoNumbers[i - 1]);
+		return winnerCardSum.ToString();
 	}
 
 
