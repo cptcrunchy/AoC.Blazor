@@ -1,0 +1,44 @@
+﻿@page "/day-5"
+@using System.Diagnostics
+
+@inject ISnackbar Snackbar
+
+<MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
+
+	<MudText Typo="Typo.h4" GutterBottom="true">Day 5: </MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
+
+	<MudText Typo="Typo.body1" GutterBottom="true">--- Part Two ---</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionB</MudText>
+
+	<MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@UpdatePuzzle">Update Puzzle</MudButton>
+</MudPaper>
+
+@code {
+	private Puzzle Puzzle { get; set; } = new();
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			Puzzle = Utilities.GetPuzzleInput("Day4");
+			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+			
+			StateHasChanged();
+		}
+
+	}
+
+
+
+
+
+	private async Task UpdatePuzzle()
+	{
+		await Utilities.UpdatePuzzleFile(Puzzle);
+		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
+	}
+
+}
