@@ -5,7 +5,7 @@
 
 <MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
 
-	<MudText Typo="Typo.h4" GutterBottom="true">Day 5: </MudText>
+	<MudText Typo="Typo.h4" GutterBottom="true">Day 5: Hydrothermal Venture</MudText>
 
 	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
 
@@ -18,22 +18,33 @@
 
 @code {
 	private Puzzle Puzzle { get; set; } = new();
+	private List<VentLine> ThermalVents { get; set; }
+
 
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
 		{
-			Puzzle = Utilities.GetPuzzleInput("Day4");
-			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-			
+			Puzzle = Utilities.GetPuzzleInput("Day5");
+			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
+			ThermalVents = data.Select(VentLine.FromData).ToList();
+			Puzzle.SolutionA = CountVentOverlaps(2);
 			StateHasChanged();
 		}
 
 	}
 
+	private string CountVentOverlaps(int minValue)
+	{
+		var overLaps = ThermalVents
+			.Where(line => !line.IsDiagonal())
+			.SelectMany(line => line.GetCoordinates())
+			.GroupBy(coords => coords)
+			.Where(grp => grp.Count() >= minValue)
+			.Count().ToString();
 
-
-
+		return overLaps;
+	}
 
 	private async Task UpdatePuzzle()
 	{
