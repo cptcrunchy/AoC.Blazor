@@ -28,16 +28,17 @@
 			Puzzle = Utilities.GetPuzzleInput("Day5");
 			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
 			ThermalVents = data.Select(VentLine.FromData).ToList();
-			Puzzle.SolutionA = CountVentOverlaps(2);
+			Puzzle.SolutionA = CountVentOverlaps(2, false);
+			Puzzle.SolutionB = CountVentOverlaps(2, true);
 			StateHasChanged();
 		}
 
 	}
 
-	private string CountVentOverlaps(int minValue)
+	private string CountVentOverlaps(int minValue, bool isDiagonal)
 	{
 		var overLaps = ThermalVents
-			.Where(line => !line.IsDiagonal())
+			.Where(line =>  isDiagonal || !line.IsDiagonal())
 			.SelectMany(line => line.GetCoordinates())
 			.GroupBy(coords => coords)
 			.Where(grp => grp.Count() >= minValue)
