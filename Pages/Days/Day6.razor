@@ -19,14 +19,17 @@
 @code {
 	private Puzzle Puzzle { get; set; } = new();
 
+	private Dictionary<int, long> LanternFish { get; set; } = new();
 
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
 		{
 			Puzzle = Utilities.GetPuzzleInput("Day6");
-			GetSumOfLanternFish();
 
+			LanternFish = Puzzle.Input.Split(',').Select(int.Parse).GroupBy(x => x).ToDictionary(grp => grp.Key, grp => (long)grp.Count());
+			GetSumOfLanternFish();
+			GetSumOfLanternFishGodMode();
 
 			StateHasChanged();
 		}
@@ -35,16 +38,30 @@
 
 	private void GetSumOfLanternFish()
 	{
-		var schoolOfLanternFish = Puzzle.Input.Split(',').Select(int.Parse).ToList();
+		for (var i = 0; i < 80; i++) LanternFish = SpawnCycle(LanternFish);
 
-		for (var i = 0; i < 80; i++)
-		{
-			var newLanternFish = schoolOfLanternFish.Where(fish => fish == 0).Select(x => 8).ToList();
-			schoolOfLanternFish = schoolOfLanternFish.Select(x => x == 0 ? 6 : x - 1).Concat(newLanternFish).ToList();
-		}
-
-		Puzzle.SolutionA = schoolOfLanternFish.Count.ToString();
+		Puzzle.SolutionA = LanternFish.Values.Sum().ToString();
 	}
+
+	private void GetSumOfLanternFishGodMode()
+	{
+		for (var i = 80; i < 256; i++) LanternFish = SpawnCycle(LanternFish);
+		Puzzle.SolutionB = LanternFish.Values.Sum().ToString();
+	}
+
+
+	private static Dictionary<int, long> SpawnCycle(Dictionary<int, long> lanternFish) => new()
+	{
+		[8] = lanternFish.GetValueOrDefault(0),
+		[7] = lanternFish.GetValueOrDefault(8),
+		[6] = lanternFish.GetValueOrDefault(0) + lanternFish.GetValueOrDefault(7),
+		[5] = lanternFish.GetValueOrDefault(6),
+		[4] = lanternFish.GetValueOrDefault(5),
+		[3] = lanternFish.GetValueOrDefault(4),
+		[2] = lanternFish.GetValueOrDefault(3),
+		[1] = lanternFish.GetValueOrDefault(2),
+		[0] = lanternFish.GetValueOrDefault(1)
+	};
 
 
 	private async Task UpdatePuzzle()
