@@ -19,21 +19,42 @@
 @code {
 	private Puzzle Puzzle { get; set; } = new();
 
+	private List<int> CrabSubs { get; set; } = new();
+
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
 		{
 			Puzzle = Utilities.GetPuzzleInput("Day7-practice");
+			CrabSubs = Puzzle.Input.Split(',').Select(int.Parse).ToList();
 
-			var data = Puzzle.Input.Split('\n');
-
-
+			CalculateCrabFuelCost();
 			StateHasChanged();
 		}
 
 	}
 
+	private void CalculateCrabFuelCost()
+	{
+		var maxPosition = CrabSubs.Max();
+		var minPosition = CrabSubs.Min();
+		var position = minPosition;
 
+		Dictionary<int,int> fuelConsumptions = new();
+		do
+		{
+			var totalFuelConsumed = 0;
+			foreach (var crabSub in CrabSubs)
+				totalFuelConsumed += Math.Abs(crabSub - position);
+
+			fuelConsumptions.Add(position, totalFuelConsumed);
+			position++;
+		} while (position < CrabSubs.Count);
+
+		Puzzle.SolutionA = (from fuel in fuelConsumptions
+							orderby fuel.Value ascending
+							select fuel.Value).First().ToString();
+	}
 
 	private async Task UpdatePuzzle()
 	{
@@ -41,4 +62,4 @@
 		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
 	}
 
-}
+	}
