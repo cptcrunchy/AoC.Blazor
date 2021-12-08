@@ -1,0 +1,55 @@
+﻿@page "/day-8"
+@using System.Diagnostics
+
+@inject ISnackbar Snackbar
+
+<MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
+
+	<MudText Typo="Typo.h4" GutterBottom="true">Day @Puzzle.Day: @Puzzle.Name</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
+
+	<MudText Typo="Typo.body1" GutterBottom="true">--- Part Two ---</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionB</MudText>
+
+	<MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@UpdatePuzzle">Update Puzzle</MudButton>
+</MudPaper>
+
+@code {
+	private Puzzle Puzzle { get; set; } = new();
+	private List<string> SignalOutputs { get; set; } = new();
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			Puzzle = Utilities.GetPuzzleInput("Day8");
+			SignalOutputs = Puzzle.Input.Split('\n').ToList();
+
+			SolvePartA();
+			SolvePartB();
+			StateHasChanged();
+		}
+
+	}
+
+	private void SolvePartA()
+	{
+		var signals = string.Join(' ',SignalOutputs.Where(sig => !sig.EndsWith("|")));
+		var outputs = signals.Split(' ').Where(sig => sig.Length == 2 || sig.Length == 3 || sig.Length == 4 || sig.Length == 7).ToArray().Length;
+		Puzzle.SolutionA = outputs.ToString();
+	}
+
+	private void SolvePartB()
+	{
+
+	}
+
+	private async Task UpdatePuzzle()
+	{
+		await Utilities.UpdatePuzzleFile(Puzzle);
+		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
+	}
+
+}
