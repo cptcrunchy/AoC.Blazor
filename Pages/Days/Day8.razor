@@ -36,7 +36,7 @@
 
 	private void SolvePartA()
 	{
-		var signals = string.Join(' ',SignalOutputs.Where(sig => !sig.EndsWith("|")));
+		var signals = string.Join(' ',SignalOutputs.Select(sig => sig.Split("|")[1]));
 		var outputs = signals.Split(' ').Where(sig => sig.Length == 2 || sig.Length == 3 || sig.Length == 4 || sig.Length == 7).ToArray().Length;
 		Puzzle.SolutionA = outputs.ToString();
 	}
