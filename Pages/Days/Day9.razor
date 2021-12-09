@@ -1,0 +1,70 @@
+﻿@page "/day-9"
+@using System.Diagnostics
+@using System.Text
+
+@inject ISnackbar Snackbar
+
+<MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
+
+	<MudText Typo="Typo.h4" GutterBottom="true">Day @Puzzle.Day: @Puzzle.Name</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
+
+	<MudText Typo="Typo.body1" GutterBottom="true">--- Part Two ---</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionB</MudText>
+
+	<MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@UpdatePuzzle">Update Puzzle</MudButton>
+</MudPaper>
+
+@code {
+	private Puzzle Puzzle { get; set; } = new();
+	private string[] Heights { get; set; }
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			Puzzle = Utilities.GetPuzzleInput("Day9-practice");
+			Heights = Puzzle.Input.Split('\n').ToArray();
+
+			SolvePartA();
+			SolvePartB();
+			StateHasChanged();
+		}
+
+	}
+
+	private void SolvePartA()
+	{
+		var lowPoints = new List<(int row, int col)>();
+		var sum = 0;
+		for(int i = 0; i < Heights.Length; i++)
+			for(int j = 0; j < Heights[i].Length; j++)
+			{
+				var cell = Heights[i][j];
+				if (i > 0 && Heights[i - 1][j] <= cell) continue;
+				if (i < Heights.Length - 1 && Heights[i + 1][j] <= cell) continue;
+				if (j > 0 && Heights[i][j - 1] <= cell) continue;
+				if (j < Heights[i].Length - 1 && Heights[i][j + 1] <= cell) continue;
+
+				lowPoints.Add((i, j));
+				sum += (cell - '0') + 1;
+
+			}
+
+		Puzzle.SolutionA = sum.ToString();
+	}
+
+	private void SolvePartB()
+	{
+
+	}
+
+
+	private async Task UpdatePuzzle()
+	{
+		await Utilities.UpdatePuzzleFile(Puzzle);
+		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
+	}
+
+}
