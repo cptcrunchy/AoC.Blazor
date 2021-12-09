@@ -1,5 +1,6 @@
 ﻿@page "/day-8"
 @using System.Diagnostics
+@using System.Text
 
 @inject ISnackbar Snackbar
 
@@ -43,7 +44,40 @@
 
 	private void SolvePartB()
 	{
+		var result = 0;
+		foreach(var signal in SignalOutputs)
+		{
+			var inputs = signal.Split("|")[0].Split(" ").Where(s => s.Length == 2 || s.Length == 3 || s.Length == 4 || s.Length == 7).OrderBy(i => i.Length).ToArray();
+			var outputs = signal.Split("|")[1].Trim().Split(" ");
+			var valueBuilder = new StringBuilder();
+			foreach(var output in outputs)
+			{
+				if (output.Length == 2) valueBuilder.Append("1");
+				else if (output.Length == 3) valueBuilder.Append("7");
+				else if (output.Length == 4) valueBuilder.Append("4");
+				else if (output.Length == 7) valueBuilder.Append("8");
+				else valueBuilder.Append(DecodeOutput(inputs, output));
+			}
+			result += int.Parse(valueBuilder.ToString());
+		}
+		Puzzle.SolutionB = result.ToString();
+	}
 
+	private static string DecodeOutput(string[] inputs, string output)
+	{
+		if (output.Length == 5)
+		{
+			if (inputs[0].All(s => output.Contains(s))) return "3";
+			else if (inputs[3].Where(s => !inputs[2].Contains(s)).All(s => output.Contains(s))) return "2";
+			else return "5";
+		}
+		if (output.Length == 6)
+		{
+			if (inputs[1].All(s => output.Contains(s))) return "9";
+			else if (inputs[2].All(s => output.Contains(s))) return "0";
+			else return "6";
+		}
+		return null;
 	}
 
 	private async Task UpdatePuzzle()
