@@ -1,0 +1,83 @@
+﻿@page "/day-10"
+@using System.Diagnostics
+@using System.Text
+
+@inject ISnackbar Snackbar
+
+<MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
+
+	<MudText Typo="Typo.h4" GutterBottom="true">Day @Puzzle.Day: @Puzzle.Name</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
+
+	<MudText Typo="Typo.body1" GutterBottom="true">--- Part Two ---</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionB</MudText>
+
+	<MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@UpdatePuzzle">Update Puzzle</MudButton>
+</MudPaper>
+
+@code {
+	private Puzzle Puzzle { get; set; } = new();
+	private string[] NavLines { get; set; }
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			Puzzle = Utilities.GetPuzzleInput("Day10");
+			NavLines = Puzzle.Input.Split('\n').ToArray();
+
+			SolvePartA();
+			SolvePartB();
+			StateHasChanged();
+		}
+
+	}
+
+	private void SolvePartA()
+	{
+		var syntaxErrors = new List<int>();
+		var syntaxStack = new Stack<char>();
+
+		foreach(var line in NavLines)
+		{
+			foreach (var c in line)
+			{
+				if ("{([<".Contains(c)) syntaxStack.Push(c);
+				else
+				{
+					var val = (syntaxStack.Pop(), c) switch
+					{
+						('(', ')') => -1,
+						(_, ')') => 3,
+						('[', ']') => -1,
+						(_, ']') => 57,
+						('{', '}') => -1,
+						(_, '}') => 1197,
+						('<', '>') => -1,
+						(_, '>') => 25137,
+						_ => -1
+					};
+					if (val != -1) syntaxErrors.Add(val);
+				}
+			}
+		}
+
+		var syntaxScore = syntaxErrors.GroupBy(i => i).ToDictionary(g => g.Key, g => g.Count()).Sum(g => g.Key * g.Value);
+		Puzzle.SolutionA = syntaxScore.ToString();
+	}
+
+	private void SolvePartB()
+	{
+
+	}
+
+
+	private async Task UpdatePuzzle()
+	{
+		await Utilities.UpdatePuzzleFile(Puzzle);
+		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
+	}
+
+}
