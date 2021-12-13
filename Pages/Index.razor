@@ -14,11 +14,13 @@
 		@foreach (var puzzle in Puzzles)
 		{
 			<tr>
-				<td>@puzzle.Day</td>
+				<td><MudLink Href="@($"day-{puzzle.Day}")">@puzzle.Day</MudLink></td>
 				<td>@puzzle.Name</td>
-				<td>@foreach(var star in GetSolutionCount(puzzle)){
-					<MudIcon Icon="@Icons.Filled.Star" />
-				}
+				<td>
+					@foreach (var star in GetSolutionCount(puzzle))
+					{
+						<MudIcon Icon="@Icons.Filled.Star" />
+					}
 				</td>
 			</tr>
 		}
