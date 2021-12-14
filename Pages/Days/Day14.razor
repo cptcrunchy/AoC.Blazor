@@ -28,7 +28,7 @@
 	{
 		if (firstRender)
 		{
-			Puzzle = Utilities.GetPuzzleInput("Day14-practice");
+			Puzzle = Utilities.GetPuzzleInput("Day14");
 			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList();
 			InsertionRules = data.Skip(1).Select(rule => rule.Split(" -> ")).ToDictionary(x => x[0], x => x[1][0]);
 			PolymerTemplate = data.First();
