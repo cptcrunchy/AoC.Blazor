@@ -1,6 +1,7 @@
 ﻿@page "/day-14"
 @using System.Diagnostics
 @using System.Text
+@using System.Text.RegularExpressions
 
 @inject ISnackbar Snackbar
 
@@ -20,15 +21,16 @@
 @code {
 	private Puzzle Puzzle { get; set; } = new();
 	private string PolymerTemplate { get; set; }
-	private List<string> PairInsertions { get; set; } = new();
+	private Dictionary<string, char> InsertionRules { get; set; } = new();
+
 
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
 		{
-			Puzzle = Utilities.GetPuzzleInput("Day14");
+			Puzzle = Utilities.GetPuzzleInput("Day14-practice");
 			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList();
-			PairInsertions = data.Skip(1).ToList();
+			InsertionRules = data.Skip(1).Select(rule => rule.Split(" -> ")).ToDictionary(x => x[0], x => x[1][0]);
 			PolymerTemplate = data.First();
 
 			SolvePartA();
@@ -38,44 +40,36 @@
 
 	}
 
-
-	private string FindPolyRule(string polyPair)
-	{
-		var matchingRule = PairInsertions.First(rule => rule.StartsWith(polyPair));
-		return matchingRule.Skip(6).First().ToString();
-	}
-
 	private void SolvePartA()
 	{
-		for(int i = 0; i < 10; i++)
-		{
-			var matchingRules = new List<string>();
-			var polymerBuilder = new StringBuilder();
-			for(int j = 0; j < PolymerTemplate.Length - 1; j++)
-			{
-				var polyPair = String.Concat(PolymerTemplate.Skip(j).Take(2));
-				matchingRules.Add(FindPolyRule(polyPair));
-			}
-
-			for(int k = 0; k < PolymerTemplate.Length; k++)
-			{
-				polymerBuilder.Append(PolymerTemplate.Skip(k).First());
-				polymerBuilder.Append(matchingRules.Skip(k).Take(1).FirstOrDefault() ?? "");
-			}
-
-			PolymerTemplate = polymerBuilder.ToString();
-		}
-
-		var elements = PolymerTemplate.GroupBy(x => x).OrderByDescending(g => g.Count()).ToDictionary(grp => grp.Key, grp => (long)grp.Count());
-		var mostCommon = elements.First().Value;
-		var leastCommon = elements.Last().Value;
-		Puzzle.SolutionA = (mostCommon - leastCommon).ToString();
-
+		Puzzle.SolutionA = PolymerCalculator(10).ToString();
 	}
 
 	private void SolvePartB()
 	{
+		Puzzle.SolutionB = PolymerCalculator(40).ToString();
+	}
 
+	private long PolymerCalculator(int steps)
+	{
+		var polymerPairs = InsertionRules.ToDictionary(rule => rule.Key, rule => new Regex(rule.Key).Matches(PolymerTemplate).LongCount());
+
+		var chars = Enumerable.Range(0, 26).Select(e => ('A' + e)).ToDictionary(c => c, c => PolymerTemplate.LongCount(t => t == c));
+
+		for (int i = 0; i < steps; i++)
+		{
+			foreach (var rule in InsertionRules)
+			{
+				chars[rule.Value] += polymerPairs[rule.Key];
+			}
+
+			polymerPairs = InsertionRules.ToDictionary(rule => rule.Key, rule => InsertionRules.Where(r => r.Key.Insert(1, r.Value.ToString()).Contains(rule.Key)).Sum(x => polymerPairs[x.Key]));
+		}
+
+		var elements = chars.Where(x => x.Value > 0).OrderByDescending(g => g.Value);
+		var mostCommon = elements.First().Value;
+		var leastCommon = elements.Last().Value;
+		return mostCommon - leastCommon;
 	}
 
 	private async Task UpdatePuzzle()
