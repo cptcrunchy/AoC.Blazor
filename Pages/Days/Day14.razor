@@ -19,14 +19,17 @@
 
 @code {
 	private Puzzle Puzzle { get; set; } = new();
-	private List<string> SignalOutputs { get; set; } = new();
+	private string PolymerTemplate { get; set; }
+	private List<string> PairInsertions { get; set; } = new();
 
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
 		{
-			Puzzle = Utilities.GetPuzzleInput("Day14-practice");
-			SignalOutputs = Puzzle.Input.Split('\n').ToList();
+			Puzzle = Utilities.GetPuzzleInput("Day14");
+			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList();
+			PairInsertions = data.Skip(1).ToList();
+			PolymerTemplate = data.First();
 
 			SolvePartA();
 			SolvePartB();
@@ -35,8 +38,38 @@
 
 	}
 
+
+	private string FindPolyRule(string polyPair)
+	{
+		var matchingRule = PairInsertions.First(rule => rule.StartsWith(polyPair));
+		return matchingRule.Skip(6).First().ToString();
+	}
+
 	private void SolvePartA()
 	{
+		for(int i = 0; i < 10; i++)
+		{
+			var matchingRules = new List<string>();
+			var polymerBuilder = new StringBuilder();
+			for(int j = 0; j < PolymerTemplate.Length - 1; j++)
+			{
+				var polyPair = String.Concat(PolymerTemplate.Skip(j).Take(2));
+				matchingRules.Add(FindPolyRule(polyPair));
+			}
+
+			for(int k = 0; k < PolymerTemplate.Length; k++)
+			{
+				polymerBuilder.Append(PolymerTemplate.Skip(k).First());
+				polymerBuilder.Append(matchingRules.Skip(k).Take(1).FirstOrDefault() ?? "");
+			}
+
+			PolymerTemplate = polymerBuilder.ToString();
+		}
+
+		var elements = PolymerTemplate.GroupBy(x => x).OrderByDescending(g => g.Count()).ToDictionary(grp => grp.Key, grp => (long)grp.Count());
+		var mostCommon = elements.First().Value;
+		var leastCommon = elements.Last().Value;
+		Puzzle.SolutionA = (mostCommon - leastCommon).ToString();
 
 	}
 
