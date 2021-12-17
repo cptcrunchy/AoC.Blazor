@@ -38,23 +38,24 @@
 
 	private void SolvePartA()
 	{
-		var riskLevel = GetCavePathRiskLevel();
+		var riskLevel = GetCavePathRiskLevel(1);
 
 		Puzzle.SolutionA = riskLevel.ToString();
 	}
 
 	private void SolvePartB()
 	{
-		Puzzle.SolutionB = "";
+		var riskLevel = GetCavePathRiskLevel(5);
+		Puzzle.SolutionB = riskLevel.ToString();
 	}
 
 
-	private int GetCavePathRiskLevel()
+	private int GetCavePathRiskLevel(int dimension)
 	{
 		var yAxis = CavernPositions.Length;
-		var yMax = yAxis - 1;
+		var yMax = yAxis * dimension - 1;
 		var xAxis = CavernPositions[0].Length;
-		var xMax = xAxis - 1;
+		var xMax = xAxis * dimension - 1;
 		var shortestPaths = new List<CavePath> { new CavePath((0, 0)) };
 		var visitedPositions = new Dictionary<(int x, int y), int> { { (0, 0), 0 } };
 
