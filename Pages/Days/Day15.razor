@@ -1,0 +1,118 @@
+﻿@page "/day-15"
+@using System.Diagnostics
+@using System.Text
+@using System.Text.RegularExpressions
+
+@inject ISnackbar Snackbar
+
+<MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
+
+	<MudText Typo="Typo.h4" GutterBottom="true">Day @Puzzle.Day: @Puzzle.Name</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
+
+	<MudText Typo="Typo.body1" GutterBottom="true">--- Part Two ---</MudText>
+
+	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionB</MudText>
+
+	<MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@UpdatePuzzle">Update Puzzle</MudButton>
+</MudPaper>
+
+@code {
+	private Puzzle Puzzle { get; set; } = new();
+	private string[] CavernPositions { get; set; }
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			Puzzle = Utilities.GetPuzzleInput("Day15");
+			CavernPositions = Puzzle.Input.Split('\n').ToArray();
+
+			SolvePartA();
+			SolvePartB();
+			StateHasChanged();
+		}
+
+	}
+
+	private void SolvePartA()
+	{
+		var riskLevel = GetCavePathRiskLevel();
+
+		Puzzle.SolutionA = riskLevel.ToString();
+	}
+
+	private void SolvePartB()
+	{
+		Puzzle.SolutionB = "";
+	}
+
+
+	private int GetCavePathRiskLevel()
+	{
+		var yAxis = CavernPositions.Length;
+		var yMax = yAxis - 1;
+		var xAxis = CavernPositions[0].Length;
+		var xMax = xAxis - 1;
+		var shortestPaths = new List<CavePath> { new CavePath((0, 0)) };
+		var visitedPositions = new Dictionary<(int x, int y), int> { { (0, 0), 0 } };
+
+		do
+		{
+			var potentialPaths = new List<CavePath>();
+			foreach (var path in shortestPaths)
+			{
+				var (x, y) = path.LastPosition;
+				if ((x, y) == (xMax, yMax))
+				{
+					potentialPaths.Add(path);
+					continue;
+				}
+				for (int cell = 0; cell < 4; cell++)
+				{
+					var nextX = x + cell switch { 0 => 1, 2 => -1, _ => 0 };
+					var nextY = y + cell switch { 1 => -1, 3 => 1, _ => 0 };
+					if (nextX < 0 || nextX > xMax || nextY < 0 || nextY > yMax) continue;
+					var nextPosition = (nextX, nextY);
+					var riskLevel = CalculateRisk(nextX, nextY);
+					if (!visitedPositions.TryGetValue(nextPosition, out var visitRiskLevel))
+					{
+						var nextPath = new CavePath(path, nextPosition, riskLevel);
+						potentialPaths.Add(nextPath);
+						visitedPositions[nextPosition] = nextPath.Risk;
+					}
+					else if ((path.Risk + riskLevel) < visitRiskLevel)
+					{
+						var nextPath = new CavePath(path, nextPosition, riskLevel);
+						potentialPaths.Add(nextPath);
+						visitedPositions[nextPosition] = nextPath.Risk;
+					}
+				}
+			}
+			shortestPaths = potentialPaths.GroupBy(x => x.LastPosition, (key, grp) => grp.OrderBy(x => x.Risk).First()).ToList();
+
+		} while (shortestPaths.Count > 1);
+
+		return shortestPaths.First().Risk;
+	}
+
+
+	private int CalculateRisk(int nextX, int nextY)
+	{
+		var x = nextX / CavernPositions.Length;
+		var y = nextY / CavernPositions[0].Length;
+		var vector = CavernPositions[nextX % CavernPositions.Length][nextY % CavernPositions[0].Length] - '0';
+
+		return ((vector - 1 + x + y) % 9) + 1;
+	}
+
+
+
+	private async Task UpdatePuzzle()
+	{
+		await Utilities.UpdatePuzzleFile(Puzzle);
+		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
+	}
+
+}
