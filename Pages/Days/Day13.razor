@@ -19,14 +19,14 @@
 
 @code {
 	private Puzzle Puzzle { get; set; } = new();
-	private string[] NavLines { get; set; }
+	private string[] Data { get; set; }
 
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
 		{
-			Puzzle = Utilities.GetPuzzleInput("Day13-practice");
-			NavLines = Puzzle.Input.Split('\n').ToArray();
+			Puzzle = Utilities.GetPuzzleInput("Day13");
+			Data = Puzzle.Input.Split('\n').ToArray();
 
 			SolvePartA();
 			SolvePartB();
@@ -37,13 +37,29 @@
 
 	private void SolvePartA()
 	{
+		var dots = Data.Where(row => row.Contains(','))
+			.Select(row => row.Split(','))
+			.Select(coor => (int.Parse(coor[0]), int.Parse(coor[1])))
+			.Select(coor => (X: coor.Item1, Y: coor.Item2))
+			.ToList();
 
+		var folds = Data.Where(row => row.Contains("fold along"))
+			.Select(row => row.Replace("fold along ", "").Split('='))
+			.Select(axis => (X: axis[0] == "x" ? int.Parse(axis[1]) : 0, Y: axis[0] == "y" ? int.Parse(axis[1]) : 0))
+			.ToList();
+
+		var remainingDots = folds.Take(1).SelectMany(fold => dots.Select(dot => (X: Fold(fold.X, dot.X), Y: Fold(fold.Y, dot.Y)))).Distinct().Count();
+
+		Puzzle.SolutionA = remainingDots.ToString();
 	}
 
 	private void SolvePartB()
 	{
 
 	}
+
+
+	private static int Fold(int foldAxis, int axis) => foldAxis > 0 && axis >= foldAxis ? foldAxis - (axis - foldAxis) : axis;
 
 
 	private async Task UpdatePuzzle()
