@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <Folder Include="Data\Year\2022\" />
+    <Folder Include="Pages\Years\2021\Days\" />
+    <Folder Include="Pages\Years\2022\Days\" />
   </ItemGroup>
 
   <ItemGroup>

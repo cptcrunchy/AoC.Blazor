@@ -4,7 +4,7 @@
 
 <MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
 
-	<MudText Typo="Typo.h4" GutterBottom="true">Day 2: Dive!</MudText>
+	<MudText Typo="Typo.h4" GutterBottom="true">Day 2: Rock Paper Scissors</MudText>
 	
 	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
 	
@@ -18,62 +18,26 @@
 @code {
 	private Puzzle Puzzle { get; set; } = new();
 
-	protected override void OnAfterRender(bool firstRender)
-	{
-
-		if (firstRender)
-		{
-			Puzzle = Utilities.GetPuzzleInput("Day2");
-			var directions = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList()).ToList();
-			Puzzle.SolutionA = GetDepthAndPosition(directions);
-			Puzzle.SolutionB = GetDepthAndPositionAndAim(directions);
-			StateHasChanged();
-		}
-
-	}
-
-	private string GetDepthAndPosition(List<List<string>> directions)
-	{
-		var depth = 0;
-		var horizontalPos = 0;
-		foreach(var direction in directions)
-		{
-			var unit = int.Parse(direction[1]);
-			if (direction[0] == "forward") horizontalPos += unit;
-			if (direction[0] == "up") depth -= unit;
-			if (direction[0] == "down") depth += unit;
-		}
-
-		var total = depth * horizontalPos;
-
-		return total.ToString();
-	}
-
-	private string GetDepthAndPositionAndAim(List<List<string>> directions)
-	{
-		var depth = 0;
-		var horizontalPos = 0;
-		var aim = 0;
-
-		foreach (var direction in directions)
-		{
-			var unit = int.Parse(direction[1]);
-			if (direction[0] == "up") aim -= unit;
-			if (direction[0] == "down") aim += unit;
-			if (direction[0] == "forward")
-			{
-				horizontalPos += unit;
-				depth += (aim * unit);
-			}
-		}
-		var total = depth * horizontalPos;
-		return total.ToString();
-	}
-
 	private async Task UpdatePuzzle()
 	{
 		await Utilities.UpdatePuzzleFile(Puzzle);
 		SnackBar.Add("Puzzle JSON updated!", Severity.Success);
 	}
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+
+		if (firstRender)
+		{
+			Puzzle = Utilities.GetPuzzleInput("Day2-practice");
+			var directions = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList()).ToList();
+			
+			StateHasChanged();
+		}
+
+	}
+
+	
+
 
 }
