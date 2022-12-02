@@ -18,6 +18,18 @@
 @code {
 	private Puzzle Puzzle { get; set; } = new();
 
+	enum ShapeSelected {
+		Rock = 1,
+		Paper = 2,
+		Scissors = 3
+	}
+
+	enum GameOutcome {
+		Loss,
+		Draw = 3,
+		Win = 6
+	}
+
 	private async Task UpdatePuzzle()
 	{
 		await Utilities.UpdatePuzzleFile(Puzzle);
@@ -29,15 +41,136 @@
 
 		if (firstRender)
 		{
-			Puzzle = Utilities.GetPuzzleInput("Day2-practice");
-			var directions = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList()).ToList();
-			
+			Puzzle = Utilities.GetPuzzleInput("Day2");
+			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList()).ToList();
+			Puzzle.SolutionA = InitialStrategy(data);
+			Puzzle.SolutionB = UpdatedStrategy(data);
 			StateHasChanged();
 		}
 
 	}
 
-	
+	private string InitialStrategy(List<List<string>> rounds)
+	{
+		int totalScore = 0;
+		foreach (var round in rounds)
+		{
+			var opponent = round[0];
+			var player = round[1];
+			int shapeSelected = 0;
+			int gameOutcome = 0;
+			if (player == "X") shapeSelected = (int)ShapeSelected.Rock;
+			if (player == "Y") shapeSelected = (int)ShapeSelected.Paper;
+			if (player == "Z") shapeSelected = (int)ShapeSelected.Scissors;
 
+			/// A - Rock
+			/// X - Rock
+			if (opponent == "A")
+			{
+				if (player == "X") gameOutcome = (int)GameOutcome.Draw;
+				if (player == "Y") gameOutcome = (int)GameOutcome.Win;
+				if (player == "Z") gameOutcome = (int)GameOutcome.Loss;
+			}
+			/// B - Paper
+			/// Y - Paper
+			if (opponent == "B")
+			{
+				if (player == "Z") gameOutcome = (int)GameOutcome.Win;
+				if (player == "Y") gameOutcome = (int)GameOutcome.Draw;
+				if (player == "X") gameOutcome = (int)GameOutcome.Loss;
+			}
+			/// C - Scissors
+			/// Z - Scissors
+			if (opponent == "C")
+			{
+				if (player == "X") gameOutcome = (int)GameOutcome.Win;
+				if (player == "Z") gameOutcome = (int)GameOutcome.Draw;
+				if (player == "Y") gameOutcome = (int)GameOutcome.Loss;
+			}
+
+			totalScore += (shapeSelected + gameOutcome);
+		}
+
+
+		return totalScore.ToString();
+	}
+
+	private string UpdatedStrategy(List<List<string>> rounds)
+	{
+		int totalScore = 0;
+		foreach (var round in rounds)
+		{
+			var opponent = round[0];
+			var expectedOutcome = round[1];
+			int shapeSelected = 0;
+			int gameOutcome = 0;
+
+			/// A - Rock
+			/// X - Rock
+			if (opponent == "A")
+			{
+				if (expectedOutcome == "X")
+				{
+					gameOutcome = (int)GameOutcome.Loss;
+					shapeSelected = (int)ShapeSelected.Scissors;
+				}
+				if (expectedOutcome == "Y")
+				{
+					gameOutcome = (int)GameOutcome.Draw;
+					shapeSelected = (int)ShapeSelected.Rock;
+				}
+				if (expectedOutcome == "Z")
+				{ 
+					gameOutcome = (int)GameOutcome.Win;
+					shapeSelected = (int)ShapeSelected.Paper;
+				}
+			}
+			/// B - Paper
+			/// Y - Paper
+			if (opponent == "B")
+			{
+				if (expectedOutcome == "X")
+				{
+					gameOutcome = (int)GameOutcome.Loss;
+					shapeSelected = (int)ShapeSelected.Rock;
+				}
+				if (expectedOutcome == "Y")
+				{
+					gameOutcome = (int)GameOutcome.Draw;
+					shapeSelected = (int)ShapeSelected.Paper;
+				}
+				if (expectedOutcome == "Z")
+				{ 
+					gameOutcome = (int)GameOutcome.Win;
+					shapeSelected = (int)ShapeSelected.Scissors;
+				}
+			}
+			/// C - Scissors
+			/// Z - Scissors
+			if (opponent == "C")
+			{
+				if (expectedOutcome == "X")
+				{
+					gameOutcome = (int)GameOutcome.Loss;
+					shapeSelected = (int)ShapeSelected.Paper;
+				}
+				if (expectedOutcome == "Y")
+				{
+					gameOutcome = (int)GameOutcome.Draw;
+					shapeSelected = (int)ShapeSelected.Scissors;
+				}
+				if (expectedOutcome == "Z")
+				{
+					gameOutcome = (int)GameOutcome.Win;
+					shapeSelected = (int)ShapeSelected.Rock;
+				}
+			}
+
+			totalScore += (shapeSelected + gameOutcome);
+		}
+
+
+		return totalScore.ToString();
+	}
 
 }
