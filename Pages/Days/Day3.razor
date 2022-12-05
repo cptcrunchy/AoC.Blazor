@@ -6,7 +6,7 @@
 
 <MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
 
-	<MudText Typo="Typo.h4" GutterBottom="true">Day 3: Binary Diagnostic</MudText>
+	<MudText Typo="Typo.h4" GutterBottom="true">Day 3: Rucksack Reorganization</MudText>
 
 	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
 
@@ -20,147 +20,75 @@
 @code {
 	private Puzzle Puzzle { get; set; } = new();
 
-	protected override void OnAfterRender(bool firstRender)
-	{
-		if (firstRender)
-		{
-			Puzzle = Utilities.GetPuzzleInput("Day3");
-			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-
-			Puzzle.SolutionA = GetPowerConsumption(data);
-			Puzzle.SolutionB = GetLifeSupportRating(data);
-			StateHasChanged();
-		}
-
-	}
-
-	private List<List<string>> GetReportData(string[] data)
-	{
-		var numbers = new List<List<string>>();
-		for (var i = 0; i < data[0].Length; i++)
-		{
-			var col = new List<string>();
-			foreach (var row in data) col.Add(row[i].ToString());
-			numbers.Add(col);
-		}
-		return numbers;
-	}
-
-	private List<string> GetBitRating(string[] data, int position = 0)
-	{
-		var numbers = new List<List<string>>();
-		for (var i = 0; i < data[0].Length; i++)
-		{
-			var col = new List<string>();
-			foreach (var row in data) col.Add(row[i].ToString());
-			numbers.Add(col);
-		}
-		return numbers[position];
-	}
-
-	private string GetMostCommon(List<string> values)
-	{
-		return values.GroupBy(i => i).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
-	}
-
-	private string GetLeastCommon(List<string> values)
-	{
-		return values.GroupBy(i => i).OrderBy(g => g.Count()).Select(g => g.Key).FirstOrDefault();
-	}
-
-	private char GetO2BitCriteria(List<string> values)
-	{
-		var ratings = values.GroupBy(i => i).OrderBy(g => g.Count()).Select(g => new { Key = g.Key, Count = g.Count() }).ToList();
-		if (ratings.Count == 1) return char.Parse(ratings[0].Key);
-		if (ratings[0].Count == ratings[1].Count) return '1';
-		if (ratings[0].Count > ratings[1].Count) return char.Parse(ratings[0].Key);
-		return char.Parse(ratings[1].Key);
-	}
-
-	private char GetCO2BitCriteria(List<string> values)
-	{
-		var ratings = values.GroupBy(i => i).OrderBy(g => g.Count()).Select(g => new { Key = g.Key, Count = g.Count() }).ToList();
-		if (ratings.Count == 1) return char.Parse(ratings[0].Key);
-		if (ratings[0].Count == ratings[1].Count) return '0';
-		if (ratings[0].Count < ratings[1].Count) return char.Parse(ratings[0].Key);
-		return char.Parse(ratings[1].Key);
-	}
-
-	private string GetPowerConsumption(string[] data)
-	{
-		var reportBits = GetReportData(data);
-
-		var gammaBuilder = new StringBuilder();
-		var epsilonBuilder = new StringBuilder();
-
-		foreach(var reportBit in reportBits)
-		{
-			gammaBuilder.Append(GetMostCommon(reportBit));
-			epsilonBuilder.Append(GetLeastCommon(reportBit));
-		}
-		var gammaRate = Convert.ToInt32(gammaBuilder.ToString(), 2);
-		var epsilonRate = Convert.ToInt32(epsilonBuilder.ToString(), 2);
-		var powerConsumption = gammaRate * epsilonRate;
-		return powerConsumption.ToString();
-	}
-
-	private string GetLifeSupportRating(string[] data)
-	{
-		var O2Rate = GetO2GenRating(data);
-		var CO2Rate = GetCO2GenRating(data);
-		return (O2Rate * CO2Rate).ToString();
-	}
-
-	private decimal GetO2GenRating(string[] data)
-	{
-		var reportData = data;
-		var O2rating = "";
-
-		for (var i = 0; i < data[0].Length; i++)
-		{
-			var o2BitRatings = GetBitRating(reportData, i);
-			var o2BitCriteria = GetO2BitCriteria(o2BitRatings);
-			reportData = reportData.Where(bit => bit[i].Equals(o2BitCriteria)).ToArray();
-
-			if (reportData.Length == 1)
-			{
-				O2rating = reportData.First();
-				break;
-			}
-			else continue;
-
-		}
-
-		return Convert.ToInt32(O2rating, 2);
-	}
-
-	private decimal GetCO2GenRating(string[] data)
-	{
-		var reportData = data;
-		var CO2rating = "";
-
-		for (var i = 0; i < data[0].Length; i++)
-		{
-			var o2BitRatings = GetBitRating(reportData, i);
-			var o2BitCriteria = GetCO2BitCriteria(o2BitRatings);
-			reportData = reportData.Where(bit => bit[i].Equals(o2BitCriteria)).ToArray();
-
-			if (reportData.Length == 1)
-			{
-				CO2rating = reportData.First();
-				break;
-			}
-			else continue;
-
-		}
-
-		return Convert.ToInt32(CO2rating, 2);
-	}
-
 	private async Task UpdatePuzzle()
 	{
 		await Utilities.UpdatePuzzleFile(Puzzle);
 		SnackBar.Add("Puzzle JSON updated!", Severity.Success);
 	}
 
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			Puzzle = Utilities.GetPuzzleInput("Day3");
+			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+			Puzzle.SolutionA = GetSolutionA(data);
+			Puzzle.SolutionB = GetSolutionB(data);
+			StateHasChanged();
+		}
+
+	}
+
+	private string GetSolutionA(string[] data)
+	{
+		var rucksacks = data.Select(rucksack =>
+		{
+			var first = rucksack.Substring(0, (int)(rucksack.Length / 2));
+			var last = rucksack.Substring((int)(rucksack.Length / 2), (int)(rucksack.Length / 2));
+			return new List<string>() { first, last };
+		}).ToList();
+		var priorities = new List<int>();
+
+		foreach(var rucksack in rucksacks)
+		{
+			var priority = (int)rucksack[0].FirstOrDefault(rucksack[1].Contains);
+			if (priority >= 97)
+			{
+				// Lowercase
+				priority -= 96;
+			} else {
+				priority -= 38;
+			}
+			priorities.Add(priority);
+		}
+
+
+		return priorities.Sum().ToString(); 
+	}
+
+	private string GetSolutionB(string[] data)
+	{
+		var rucksacks = new List<List<string>>();
+		var ruckGroups = data.Select((x, i) => data.Skip(i * 3).Take(3).ToList()).Where(a => a.Any()).ToList();
+		var priorities = new List<int>();
+
+
+		foreach(var ruckgroup in ruckGroups)
+		{
+
+			int priority = 0;
+			foreach(char c in ruckgroup[0]){
+				var ruck2HasMatch = ruckgroup[1].Contains(c);
+				var ruck3HasMatch = ruckgroup[2].Contains(c);
+				if (ruck2HasMatch && ruck3HasMatch){
+					if (c >= 97) priority = c - 96;
+					else priority = c - 38;
+					priorities.Add(priority);
+					break;
+				}
+			}
+		}
+
+		return priorities.Sum().ToString();
+	}
 }
