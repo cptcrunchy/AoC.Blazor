@@ -5,7 +5,7 @@
 
 <MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
 
-	<MudText Typo="Typo.h4" GutterBottom="true">Day 6: Lanternfish</MudText>
+	<MudText Typo="Typo.h4" GutterBottom="true">Day 6: Tuning Trouble</MudText>
 
 	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
 
@@ -19,7 +19,11 @@
 @code {
 	private Puzzle Puzzle { get; set; } = new();
 
-	private Dictionary<int, long> LanternFish { get; set; } = new();
+	private async Task UpdatePuzzle()
+	{
+		await Utilities.UpdatePuzzleFile(Puzzle);
+		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
+	}
 
 	protected override void OnAfterRender(bool firstRender)
 	{
@@ -27,47 +31,43 @@
 		{
 			Puzzle = Utilities.GetPuzzleInput("Day6");
 
-			LanternFish = Puzzle.Input.Split(',').Select(int.Parse).GroupBy(x => x).ToDictionary(grp => grp.Key, grp => (long)grp.Count());
-			GetSumOfLanternFish();
-			GetSumOfLanternFishGodMode();
-
+			Puzzle.SolutionA = GetSolutionA();
+			Puzzle.SolutionB = GetSolutionB();
 			StateHasChanged();
 		}
 
 	}
 
-	private void GetSumOfLanternFish()
+	private string GetSolutionA()
 	{
-		for (var i = 0; i < 80; i++) LanternFish = SpawnCycle(LanternFish);
-
-		Puzzle.SolutionA = LanternFish.Values.Sum().ToString();
+		var marker = "";
+		var counter = 0;
+		for(int i = 0; i < Puzzle.Input.Length; i++){
+			marker = new string(Puzzle.Input.Skip(i).Take(4).ToArray());
+			counter++;
+			if(marker.Distinct().Count() == 4){
+				counter += 3;
+				break;
+			}
+		}
+		return counter.ToString();
 	}
 
-	private void GetSumOfLanternFishGodMode()
+	private string GetSolutionB()
 	{
-		for (var i = 80; i < 256; i++) LanternFish = SpawnCycle(LanternFish);
-		Puzzle.SolutionB = LanternFish.Values.Sum().ToString();
-	}
-
-
-	private static Dictionary<int, long> SpawnCycle(Dictionary<int, long> lanternFish) => new()
-	{
-		[8] = lanternFish.GetValueOrDefault(0),
-		[7] = lanternFish.GetValueOrDefault(8),
-		[6] = lanternFish.GetValueOrDefault(0) + lanternFish.GetValueOrDefault(7),
-		[5] = lanternFish.GetValueOrDefault(6),
-		[4] = lanternFish.GetValueOrDefault(5),
-		[3] = lanternFish.GetValueOrDefault(4),
-		[2] = lanternFish.GetValueOrDefault(3),
-		[1] = lanternFish.GetValueOrDefault(2),
-		[0] = lanternFish.GetValueOrDefault(1)
-	};
-
-
-	private async Task UpdatePuzzle()
-	{
-		await Utilities.UpdatePuzzleFile(Puzzle);
-		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
+		var marker = "";
+		var counter = 0;
+		for (int i = 0; i < Puzzle.Input.Length; i++)
+		{
+			marker = new string(Puzzle.Input.Skip(i).Take(14).ToArray());
+			counter++;
+			if (marker.Distinct().Count() == 14)
+			{
+				counter += 13;
+				break;
+			}
+		}
+		return counter.ToString();
 	}
 
 }
