@@ -1,11 +1,12 @@
 ﻿@page "/day-4"
 @using System.Diagnostics
+@using System.Text.RegularExpressions
 
 @inject ISnackbar Snackbar
 
 <MudPaper Width="100%" Class="mx-2 pa-2" Outlined="false" Square="true" Elevation="0">
 
-	<MudText Typo="Typo.h4" GutterBottom="true">Day 4: Giant Squid</MudText>
+	<MudText Typo="Typo.h4" GutterBottom="true">Day 4: Camp Cleanup</MudText>
 
 	<MudText Typo="@Typo.body1" GutterBottom="true"><b>Puzzle Answer:</b> @Puzzle.SolutionA</MudText>
 
@@ -18,84 +19,56 @@
 
 @code {
 	private Puzzle Puzzle { get; set; } = new();
-	private List<string[][]> BingoCards { get; set; } = new();
-	private List<string> BingoNumbers { get; set; }
+
+	private async Task UpdatePuzzle()
+	{
+		await Utilities.UpdatePuzzleFile(Puzzle);
+		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
+	}
+
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
 		{
 			Puzzle = Utilities.GetPuzzleInput("Day4");
 			var data = Puzzle.Input.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-			BingoNumbers = data.First().Split(",").Select(n => n).ToList();
-			BuildBingoCards(data);
-			Puzzle.SolutionA = GetSumOfWinningCard();
-			Puzzle.SolutionB = GetSumOfLastWinningCard();
+			Puzzle.SolutionA = GetSolutionA(data);
+			Puzzle.SolutionB = GetSolutionB(data);
 			StateHasChanged();
 		}
 
 	}
 
-	private void BuildBingoCards(string[] data)
+	private string GetSolutionA(string[] sectionPairs)
 	{
-		var cardsData = data.Skip(1).ToList();
+		var sections = sectionPairs.Select(pair => new Regex("\\D+").Replace(pair, " ").Split(' ').Select(n => int.Parse(n)).ToList()).ToList();
 
-		while (cardsData.Count != 0)
+		var overlappedPairs = 0;
+		foreach (var section in sections)
 		{
-			var card = cardsData.Take(5).Select(row => row.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToArray()).ToArray();
-			BingoCards.Add(card);
-			cardsData = cardsData.Skip(5).ToList();
+			var firstPairEnd = (section[1] - section[0]) == 0 ? 1 : (section[1] - section[0])+1;
+			var firstPair = Enumerable.Range(section[0], firstPairEnd);
+			var secondPairEnd = (section[3] - section[2]) == 0 ? 1 : (section[3] - section[2])+1;
+			var secondPair = Enumerable.Range(section[2], secondPairEnd);
+			if (firstPair.All(n => secondPair.Contains(n)) || secondPair.All(n => firstPair.Contains(n))) overlappedPairs++;
 		}
-
+		return overlappedPairs.ToString();
 	}
-	private static bool CheckForWinnerHorizontal(string[][] bingoCard) => bingoCard.Any(row => row.All(cell => cell.StartsWith("*")));
-	private static bool CheckForWinnerVertical(string[][] bingoCard) => 
-		Enumerable.Range(0, 5).Select(row => Enumerable.Range(0, 5).Select(col => bingoCard[col][row]).ToArray())
-		.ToArray().Any(row => row.All(cell => cell.StartsWith("*")));
-	private IEnumerable<string[][]> GetMarkedCards(int i) => BingoCards.Select(card => card.Select(row => row.Select(cell => cell.Equals(BingoNumbers[i]) ? $"*{cell}" : cell).ToArray()).ToArray());
-	private int GetSumOfUnmarked(string[][] winningCard) => winningCard?.SelectMany(row => row.Where(cell => !cell.StartsWith("*"))).Select(n => int.Parse(n)).Sum() ?? 0;
-	
-	private string GetSumOfWinningCard()
-	{
-		var i = 0;
-		string[][] winningCard;
 
-		do
+	private string GetSolutionB(string[] sectionPairs)
+	{
+		var sections = sectionPairs.Select(pair => new Regex("\\D+").Replace(pair, " ").Split(' ').Select(n => int.Parse(n)).ToList()).ToList();
+
+		var overlappedPairs = 0;
+		foreach (var section in sections)
 		{
-			var markedBingoCards = GetMarkedCards(i);
-			BingoCards = markedBingoCards.ToList();
-			winningCard = BingoCards.SingleOrDefault(CheckForWinnerHorizontal) ?? BingoCards.SingleOrDefault(CheckForWinnerVertical);
-			i++;
-		} while (winningCard is null && i < BingoNumbers.Count - 1);
-
-		var winnerCardSum = GetSumOfUnmarked(winningCard) * int.Parse(BingoNumbers[i - 1]);
-		return winnerCardSum.ToString();
-
-	}
-
-	private string GetSumOfLastWinningCard()
-	{
-		var i = 0;
-		string[][] winningCard;
-
-		do
-		{
-			var markedBingoCards = GetMarkedCards(i);
-			BingoCards = markedBingoCards.ToList();
-			winningCard = BingoCards.FirstOrDefault();
-			BingoCards.RemoveAll(CheckForWinnerHorizontal);
-			BingoCards.RemoveAll(CheckForWinnerVertical);
-			i++;
-		} while (BingoCards.Any() && i < BingoNumbers.Count - 1);
-
-		var winnerCardSum = GetSumOfUnmarked(winningCard) * int.Parse(BingoNumbers[i - 1]);
-		return winnerCardSum.ToString();
-	}
-
-
-	private async Task UpdatePuzzle()
-	{
-		await Utilities.UpdatePuzzleFile(Puzzle);
-		Snackbar.Add("Puzzle JSON updated!", Severity.Success);
+			var firstPairEnd = (section[1] - section[0]) == 0 ? 1 : (section[1] - section[0]) + 1;
+			var firstPair = Enumerable.Range(section[0], firstPairEnd);
+			var secondPairEnd = (section[3] - section[2]) == 0 ? 1 : (section[3] - section[2]) + 1;
+			var secondPair = Enumerable.Range(section[2], secondPairEnd);
+			if (firstPair.Any(n => secondPair.Contains(n)) || secondPair.Any(n => firstPair.Contains(n))) overlappedPairs++;
+		}
+		return overlappedPairs.ToString();
 	}
 
 }
